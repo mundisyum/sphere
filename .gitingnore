@@ -1,5 +1,4 @@
 // ignore this files
 // (don't add them to repo)
-node_modules
-api-gateway/server/node_modules
-.idea/
+**/node_modules/
+**/.idea/
