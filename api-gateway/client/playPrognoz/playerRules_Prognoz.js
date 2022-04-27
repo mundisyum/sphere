@@ -27,7 +27,7 @@ $(function () {
   
   $.ajax({
     // -----======================================================CAHNGE HERE restaurant path=========================================----
-    url: "https://570427.selcdn.ru/Sphere/playPrognoz/tracksMorning.txt",
+    url: "https://570427.selcdn.ru/Sphere/playServerless/tracksMorning.txt",
     contentType: "text/plain; charset=utf-8",
     success: function (data) {
       //parsing tracks.txt
@@ -54,7 +54,7 @@ $(function () {
   function ajaxingList2() {
     
     $.ajax({
-      url: "https://570427.selcdn.ru/Sphere/playPrognoz/tracksDay.txt",
+      url: "https://570427.selcdn.ru/Sphere/playServerless/tracksDay.txt",
       contentType: "text/plain; charset=utf-8",
       success: function (data) {
         //parsing tracks.txt
@@ -88,7 +88,7 @@ $(function () {
   function ajaxingList3() {
     
     $.ajax({
-      url: "https://570427.selcdn.ru/Sphere/playPrognoz/tracksNight.txt",
+      url: "https://570427.selcdn.ru/Sphere/playServerless/tracksNight.txt",
       contentType: "text/plain; charset=utf-8",
       success: function (data) {
         //parsing tracks.txt
@@ -556,7 +556,7 @@ $(function () {
         method: "POST",
         contentType : 'application/json',
         dataType: "json",
-        data: JSON.stringify($formLike.serializeObject()),
+        data: JSON.stringify($formDislike.serializeObject()),
         success: console.log("value sended")
       })
       .done(function (res) {
