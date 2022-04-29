@@ -70,7 +70,7 @@ app.post('/sphere-api-middleware', async (req, res) => {
       sendDataToGoogleSheets(usersData)
     ])
     
-    data.forEach(d=> console.log({value: d.value}))
+    data.forEach(d => console.log({value: d.value}))
     res.send(data)
     return
   }
@@ -158,7 +158,6 @@ async function removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName
   const res = await getPlaylist(options)
     .then(playlistData => playlistData.split((/\r\n|\r|\n/g)))
     .then(trackNames => trackNames.filter(trackName => trackName !== dislikedSongName))
-    // .then(trackNames => trackNames.filter(trackName => trackName !== `Tantra - Macumba (Macumba Suite) (Disco Recharge (The Complete Expanded Collection),1979 ).mp3`))
     .then(updatedTrackNames => updatedTrackNames.join('\n'))
     .then(newPlaylist => updatePlaylist(options, newPlaylist))
     .catch(err => {

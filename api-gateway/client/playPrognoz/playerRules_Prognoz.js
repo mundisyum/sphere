@@ -562,9 +562,11 @@ $(function () {
         success: console.log("value sended")
       })
       .done(function (res) {
-        if (res.result === 'success') console.log("Success! Your dislike Saved.") // TODO: This song is now removed from your playlist");
+        const isSuccess = res.filter(item => item.status === 'fulfilled').length === 2
+        if (isSuccess) console.log("Success! Your dislike Saved.") // TODO: This song is now removed from your playlist");
         if (res.error) console.error(res.error);
       });
+      //
     }, 3000);
   });
   
