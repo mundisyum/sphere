@@ -2,6 +2,7 @@ const cors = require('cors')
 const axios = require('axios');
 const express = require('express')
 const S3 = require('aws-sdk/clients/s3');
+const allSettled = require('promise.allsettled');
 require('dotenv').config()
 
 const app = express()
@@ -38,17 +39,18 @@ app.get('/testing-route', (req, res) => {
     .then(data => res.send(data))
 })
 
-app.post('/sphere-api-middleware', (req, res) => {
+app.post('/sphere-api-middleware', async (req, res) => {
   console.log('sphere-api-middleware')
   
   if (Object.keys(req.body).length === 0) {
     // no data provided
-    return res.send({ error: 'no data provided. Please provide some data' })
+    res.send({ error: 'no data provided. Please provide some data' })
+    return
   }
   
   const usersData = req.body;
   const { value, playlistname, songname } = usersData;
-
+  
   if (value === 'dislike') {
     const playlistsMap = {
       'Morning list': 'tracksMorning.txt',
@@ -59,14 +61,18 @@ app.post('/sphere-api-middleware', (req, res) => {
     
     const playlistFileName = playlistsMap[playlistname]
     const dislikedSongName = songname
-    console.log({playlistFileName, dislikedSongName: songname})
-  
-    removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName)
-      .then(resData => {
-        console.log({ resData });
-        res.send(resData);
-      })
-      .catch(err => {console.log({zhzhzh:err});res.send(err)})
+    console.log({ playlistFileName, dislikedSongName: songname })
+    
+    // Promise.allSettled replacement
+    // because original Promise.allSettled is not available for this nodejs version
+    const data = await allSettled([
+      removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName),
+      sendDataToGoogleSheets(usersData)
+    ])
+    
+    data.forEach(d=> console.log({value: d.value}))
+    res.send(data)
+    return
   }
   
   sendDataToGoogleSheets(usersData).then(data => {
@@ -122,7 +128,7 @@ async function updatePlaylist(options, updatedPlaylist) {
     const { bucketName, playlistFolder, playlistFileName } = options
     const params = {
       Bucket: bucketName,
-      Key: playlistFolder + '/' + 'test-prefix-new--' + playlistFileName,
+      Key: playlistFolder + '/' + playlistFileName,
       Body: updatedPlaylist,
       ContentType: 'text/plain'
     };

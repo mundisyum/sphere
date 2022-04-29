@@ -588,6 +588,7 @@ $(function () {
       $("input[name=songname]").val(song2name);
     } else {
       // TODO: sometimes "crossfaded" is sent like a songname
+      // if paused -> songname === 'crossfaded'
       $("input[name=songname]").val("crossfaded");
       //console.log("сердечко нажалось на кроссфейде или без музыки :(");
     }
