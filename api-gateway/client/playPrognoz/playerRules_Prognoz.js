@@ -238,6 +238,7 @@ $(function () {
       src: [playingList[i]],
       preload: true,
       html5: true,
+      volume: 0,
       onpause: function () {
         clearInterval(intervaller)
       },
@@ -518,8 +519,8 @@ $(function () {
     
     insertingLikeDislikeFormData();
   
-    // console.log({initial: $formLike.serializeObject(), serialized: JSON.stringify($formLike.serializeObject())})
-    // console.log({initialType: typeof $formLike, serializedType: typeof JSON.stringify($formLike.serializeObject())})
+    console.log({formData: $formDislike.serializeObject()})
+  
     setTimeout(function () {
       e.preventDefault();
       var jqxhr = $.ajax({
@@ -548,6 +549,7 @@ $(function () {
     
     insertingLikeDislikeFormData();
     
+    console.log({formData: $formDislike.serializeObject()})
     setTimeout(function () {
       e.preventDefault();
       var jqxhr = $.ajax({
@@ -585,6 +587,7 @@ $(function () {
       var song2name = sound2._src.split("https://570427.selcdn.ru/Sphere/musiclibrary/")[1];
       $("input[name=songname]").val(song2name);
     } else {
+      // TODO: sometimes "crossfaded" is sent like a songname
       $("input[name=songname]").val("crossfaded");
       //console.log("сердечко нажалось на кроссфейде или без музыки :(");
     }

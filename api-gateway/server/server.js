@@ -16,6 +16,15 @@ app.use(cors())
 
 const googleSheetWebAppUrl = 'https://script.google.com/macros/s/AKfycbwvHsB6fEUWTTQf2ifSSDj_803tyheIEr41J1Q8SgJLzYX_0xTKqlMWRNko7Kj9KS0Qog/exec';
 
+// setup s3
+const s3 = new S3({
+  accessKeyId: process.env.accessKeyId,
+  secretAccessKey: process.env.secretAccessKey,
+  endpoint: 'https://s3.storage.selcloud.ru',
+  s3ForcePathStyle: true,
+  region: 'ru-1',
+})
+
 app.get('/testing-route', (req, res) => {
   console.log('request from express.js route')
   const fakeData = {
@@ -26,7 +35,7 @@ app.get('/testing-route', (req, res) => {
   }
   
   sendDataToGoogleSheets(fakeData)
-  .then(data => res.send(data))
+    .then(data => res.send(data))
 })
 
 app.post('/sphere-api-middleware', (req, res) => {
@@ -34,11 +43,32 @@ app.post('/sphere-api-middleware', (req, res) => {
   
   if (Object.keys(req.body).length === 0) {
     // no data provided
-    return res.send({error: 'no data provided. Please provide some data'})
+    return res.send({ error: 'no data provided. Please provide some data' })
   }
   
   const usersData = req.body;
-  console.log({usersDatad: usersData})
+  const { value, playlistname, songname } = usersData;
+
+  if (value === 'dislike') {
+    const playlistsMap = {
+      'Morning list': 'tracksMorning.txt',
+      'Day list': 'tracksDay.txt',
+      'Night list': 'tracksNight.txt',
+      'non-basic playlist': '?'
+    }
+    
+    const playlistFileName = playlistsMap[playlistname]
+    const dislikedSongName = songname
+    console.log({playlistFileName, dislikedSongName: songname})
+  
+    removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName)
+      .then(resData => {
+        console.log({ resData });
+        res.send(resData);
+      })
+      .catch(err => {console.log({zhzhzh:err});res.send(err)})
+  }
+  
   sendDataToGoogleSheets(usersData).then(data => {
     res.send(data)
   })
@@ -47,15 +77,14 @@ app.post('/sphere-api-middleware', (req, res) => {
 function sendDataToGoogleSheets(data) {
   // https://www.npmjs.com/package/axios
   return axios.post(googleSheetWebAppUrl, data)
-  .then(function (response) {
-    // handle success
-    // console.log(response);
-    return response.data;
-  })
-  .catch(function (error) {
-    // handle error
-    console.log(error);
-  })
+    .then(function (response) {
+      // handle success
+      return response.data;
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
 }
 
 // uncomment for testing in a console
@@ -71,24 +100,10 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
 
-
-// setup s3
-var s3 = new S3({
-  accessKeyId: process.env.accessKeyId,
-  secretAccessKey: process.env.secretAccessKey,
-  endpoint: 'https://s3.storage.selcloud.ru',
-  s3ForcePathStyle: true,
-  region: 'ru-1',
-})
-
-// https://developers.selectel.ru/docs/cloud-services/cloud-storage/s3/methods_s3_api/
-const bucketName = 'test-bucket-container' // "bucket" means "container"
-const playlistFolder = 'playServerlessTestBucket'
-const playlistFileName = 'tracksDay.txt'
-
-async function getPlaylist() {
+async function getPlaylist(options) {
   // https://stackoverflow.com/a/52976521/9675926
   try {
+    const { bucketName, playlistFolder, playlistFileName } = options;
     const params = {
       Bucket: bucketName,
       Key: playlistFolder + '/' + playlistFileName
@@ -102,10 +117,9 @@ async function getPlaylist() {
   }
 }
 
-// async function uploadPlaylist(bucket, objectKey) {
-async function uploadPlaylist(updatedPlaylist) {
-  // update playlist
+async function updatePlaylist(options, updatedPlaylist) {
   try {
+    const { bucketName, playlistFolder, playlistFileName } = options
     const params = {
       Bucket: bucketName,
       Key: playlistFolder + '/' + 'test-prefix-new--' + playlistFileName,
@@ -117,7 +131,6 @@ async function uploadPlaylist(updatedPlaylist) {
       if (err) {
         console.log(err, err.stack);
       } else {
-        data.ваы = 'еуые'
         console.log(data);
       }
     }).promise()
@@ -128,11 +141,25 @@ async function uploadPlaylist(updatedPlaylist) {
   }
 }
 
-const dislikedTrackName = `D Rebel Band  Solid.mp3`
+async function removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName) {
+  // https://developers.selectel.ru/docs/cloud-services/cloud-storage/s3/methods_s3_api/
+  const options = {
+    bucketName: 'test-bucket-container',  // "bucket" means "container"
+    playlistFolder: 'playServerlessTestBucket',
+    playlistFileName: playlistFileName
+  }
+  
+  const res = await getPlaylist(options)
+    .then(playlistData => playlistData.split((/\r\n|\r|\n/g)))
+    .then(trackNames => trackNames.filter(trackName => trackName !== dislikedSongName))
+    // .then(trackNames => trackNames.filter(trackName => trackName !== `Tantra - Macumba (Macumba Suite) (Disco Recharge (The Complete Expanded Collection),1979 ).mp3`))
+    .then(updatedTrackNames => updatedTrackNames.join('\n'))
+    .then(newPlaylist => updatePlaylist(options, newPlaylist))
+    .catch(err => {
+      console.log(err);
+      return err
+    })
+  
+  return res
+}
 
-getPlaylist()
-.then(playlistData => playlistData.split((/\r\n|\r|\n/g)))
-.then(trackNames => trackNames.filter(trackName => trackName !== dislikedTrackName))
-// .then(trackNames => trackNames.filter((trackName, i) => i !== 0))
-.then(updatedTrackNames => updatedTrackNames.join('\n'))
-.then(newPlaylist => uploadPlaylist(newPlaylist))
