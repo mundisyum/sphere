@@ -25,8 +25,8 @@ function zipDirectory(sourceDir, outPath) {
   });
 }
 
-const uniqueId = nanoid.nanoid();
+const uniqueId = nanoid.customAlphabet('1234567890abcdef', 7)();
 const serverlessSrcPath = path.join(__dirname, '../serverless/src/');
-const serverlessZipOutputPath = path.join(__dirname, '../serverless/generated-zip/serverless-' + uniqueId + '.zip')
+const serverlessZipOutputPath = path.join(__dirname, '../serverless/generated-zip/serverless_' + uniqueId + '.zip')
 zipDirectory(serverlessSrcPath, serverlessZipOutputPath)
   .then(() => console.log(`Serverless zip is successfully created\n`))
