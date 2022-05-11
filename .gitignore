@@ -5,3 +5,5 @@ build
 .idea
 .env
 **.zip
+server/serverless/src/package.json
+server/serverless/generated-zip
