@@ -4,4 +4,4 @@ build
 .vscode
 .idea
 .env
-
+**.zip
