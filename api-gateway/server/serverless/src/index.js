@@ -27,6 +27,11 @@ async function handleApiRequests(usersData) {
   // log credentials to see if they are correct
   console.log({ loginCredentials })
   
+  if (usersData === undefined || Object.keys(usersData).length === 0) {
+    // no data provided
+    return { result: 'error', message: 'No data provided. Please provide some data' }
+  }
+  
   const { login, password } = usersData
   const isLoggedIn = loginCredentials.filter(
     credentials => credentials.login === login && credentials.password === password
@@ -52,11 +57,6 @@ async function handleApiRequests(usersData) {
       result: 'error',
       message: 'You must be logged in to proceed this action'
     }
-  }
-  
-  if (Object.keys(usersData).length === 0) {
-    // no data provided
-    return { result: 'error', message: 'No data provided. Please provide some data' }
   }
   
   const { value, playlistname, songname } = usersData;
@@ -150,8 +150,8 @@ async function getPlaylist(options) {
     const data = await s3.getObject(params).promise();
     
     return data.Body.toString('utf8');
-  } catch (e) {
-    throw new Error(`Could not retrieve file from S3: ${e.message}`)
+  } catch (error) {
+    throw new Error(`Could not retrieve file from S3: ${error.message}`)
   }
 }
 
