@@ -1,5 +1,5 @@
 const cors = require('cors')
-const src = require('./src')
+const src = require('./serverless/src/')
 const express = require('express')
 const {
   fakeData,
@@ -9,7 +9,7 @@ const {
 
 
 const app = express()
-const port = 3200
+const port = 3000
 
 // parse application/json
 // app.use(bodyParser.json())

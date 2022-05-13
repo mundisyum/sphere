@@ -1,11 +1,11 @@
 {
   "name": "sphere-api-gateway",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "scripts": {
     "dev": "nodemon -L server.js",
     "zip": "npm run clone-deps-file && npm run remove-previous-zip && npm run create-new-zip",
-    "clone-deps-file": "cp package.json ./serverless/src",
+    "clone-deps-file": "cp package.json serverless/src",
     "remove-previous-zip": "rm -rf ./serverless/generated-zip/*",
     "create-new-zip": "node utils/generate-new-zip.js"
   },

@@ -23,11 +23,11 @@
     box-sizing: border-box;
   }
   .component.input-component input:focus ~ .label-text-wrapper {
-    color: #008000;
+    /*color: #008000;*/
     transform: translateY(-1.15rem) scale(0.75);
   }
   .component.input-component.has-value input ~ .label-text-wrapper, .component.input-component.constantly-open input ~ .label-text-wrapper {
-    color: #008000;
+    /*color: #008000;*/
     transform: translateY(-1.15rem) scale(0.75);
   }
   .component.input-component .label-text-wrapper {

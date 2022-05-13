@@ -32,16 +32,31 @@ async function handleApiRequests(usersData) {
     credentials => credentials.login === login && credentials.password === password
   ).length === 1
   
+  const { isLoginRequest } = usersData
+  if (isLoginRequest) {
+    if (isLoggedIn) {
+      return {
+        result: 'success',
+        message: 'Congrats! You are successfully logged in'
+      }
+    }
+    
+    return {
+      result: 'error',
+      message: 'Sorry, wrong password. Try again, please'
+    }
+  }
+  
   if (isLoggedIn === false) {
     return {
       result: 'error',
-      errorMessage: 'You must be logged in to proceed this action'
+      message: 'You must be logged in to proceed this action'
     }
   }
   
   if (Object.keys(usersData).length === 0) {
     // no data provided
-    return { result: 'error', errorMessage: 'No data provided. Please provide some data' }
+    return { result: 'error', message: 'No data provided. Please provide some data' }
   }
   
   const { value, playlistname, songname } = usersData;
@@ -71,7 +86,7 @@ async function handleApiRequests(usersData) {
       .catch(err => {
         return {
           result: 'error',
-          errorMessage: err.toString()
+          message: err.toString()
         }
       })
     
@@ -90,7 +105,7 @@ async function handleApiRequests(usersData) {
     .catch(err => {
       return {
         result: 'error',
-        errorMessage: err.toString()
+        message: err.toString()
       }
     })
   
@@ -105,7 +120,7 @@ async function handle_api_requests(usersData) {
     .catch(err => {
       return {
         result: 'error',
-        errorMessage: err.toString()
+        message: err.toString()
       }
     });
 }

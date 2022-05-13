@@ -3,7 +3,7 @@ build
 
 .vscode
 .idea
-.env
+api-gateway/server/.env
 **.zip
 server/serverless/src/package.json
-server/serverless/generated-zip
+server/serverless/generated-zip/*
