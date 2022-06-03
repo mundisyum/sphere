@@ -14,12 +14,12 @@ const s3 = new S3({
 })
 
 const fakeData = {
-  place: 'fake-data-vServerless-v1',
-  value: 'like',
-  songname: 'heaven',
-  playlistname: 'axios',
-  login: 'test-login',
-  password: 'test-password'
+  "place": "playServerlessTest2",
+  "value": "like",
+  "songname": "Wolf Mller & Niklas Wandt - 23.Dub Dub - Dub (Dub Dub Dub Dub Dub - Instrumentalmusik Remixed, 2020-01-01).mp3",
+  "playlistFileName": "tracksMorning.txt",
+  "login": "playServerlessTest2",
+  "password": "test-password"
 }
 
 async function handleApiRequests(usersData) {
@@ -59,27 +59,64 @@ async function handleApiRequests(usersData) {
     }
   }
   
-  const { value, playlistname, songname } = usersData;
+  const { value, playlistFileName, songname } = usersData;
+  
+  if (value === 'like' || songname === 'crossfaded') {
+    const res = await sendDataToGoogleSheets(usersData)
+      .then(response => {
+        if (response.result === 'success') {
+          if (songname === 'crossfaded') {
+            return {
+              result: 'error',
+              message: 'Song\'s name is ' + songname + '\nThis bug is logged to google sheets'
+            }
+          }
+          
+          // like case
+          return {
+            result: 'success',
+            message: 'Thanks for your like! App data is updated'
+          }
+        }
+      })
+      .catch(err => {
+        console.log({ err })
+        return {
+          result: 'error',
+          message: err.toString()
+        }
+      })
+    
+    return res
+  }
   
   if (value === 'dislike') {
-    const playlistsMap = {
-      'Morning list': 'tracksMorning.txt',
-      'Day list': 'tracksDay.txt',
-      'Night list': 'tracksNight.txt',
-      'non-basic playlist': '?'
+    
+    if (playlistFileName === undefined) {
+      return {
+        result: 'error',
+        message: 'Can\'t dislike. Please, send playlistFileName to server (something like \'tracksMorning.txt\')'
+      }
     }
     
-    const playlistFileName = playlistsMap[playlistname]
-    const dislikedSongName = songname
-    console.log({ playlistFileName, dislikedSongName: songname })
+    const options = {
+      // "bucket" means "container"
+      // bucketName should be replaced with real (production) bucket name
+      // for example, bucketName could be "Sphere"
+      bucketName: 'test-bucket-container',
+      playlistFileName: playlistFileName,
+      playlistFolder: login, // so, playlistFolder will be something like "playPrognoz" or "playServersell"
+      dislikedSongName: songname
+    }
     
-    const res = await removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName)
+    const res = await removeDislikedSongFromPlaylist(options)
       .then(() => sendDataToGoogleSheets(usersData))
       .then(response => {
         if (response.result === 'success') {
           return {
             result: 'success',
-            message: 'Your dislike is now taken into account. Disliked song is already deleted from your playlist'
+            message: 'Disliked song is now deleted from your playlist\n\n' +
+              'Disliked song name is: \n' + options.dislikedSongName
           }
         }
       })
@@ -93,23 +130,10 @@ async function handleApiRequests(usersData) {
     return res
   }
   
-  const res = await sendDataToGoogleSheets(usersData)
-    .then(response => {
-      if (response.result === 'success') {
-        return {
-          result: 'success',
-          message: 'Thanks for your like! App data is updated'
-        }
-      }
-    })
-    .catch(err => {
-      return {
-        result: 'error',
-        message: err.toString()
-      }
-    })
-  
-  return res
+  return {
+    result: 'error',
+    message: 'logged-in but no action provided'
+  }
 }
 
 // this function is used as a wrapper,
@@ -179,23 +203,20 @@ async function updatePlaylist(options, updatedPlaylist) {
   }
 }
 
-async function removeDislikedSongFromPlaylist(playlistFileName, dislikedSongName) {
+async function removeDislikedSongFromPlaylist(options) {
   // https://developers.selectel.ru/docs/cloud-services/cloud-storage/s3/methods_s3_api/
-  const options = {
-    bucketName: 'test-bucket-container',  // "bucket" means "container"
-    playlistFolder: 'playServerlessTestBucket',
-    playlistFileName: playlistFileName
-  }
+  const { dislikedSongName } = options
   
   const res = await getPlaylist(options)
     .then(playlistData => playlistData.split((/\r\n|\r|\n/g)))
     .then(trackNames => {
+      console.log(dislikedSongName)
       if (trackNames.includes(dislikedSongName)) {
         return trackNames
       }
       
       throw Error('Cannot delete this song from your playlist because there is no such song in your playlist.\n' +
-                  'Song title: ' + dislikedSongName)
+        'Song title: ' + dislikedSongName)
     })
     .then(trackNames => trackNames.filter(trackName => trackName !== dislikedSongName))
     .then(updatedTrackNames => updatedTrackNames.join('\n'))
@@ -210,7 +231,6 @@ module.exports = {
   googleSheetWebAppUrl,
   s3,
   fakeData,
-  handleApiRequests,
   handle_api_requests,
   sendDataToGoogleSheets,
   getPlaylist,

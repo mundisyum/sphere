@@ -37,10 +37,6 @@ $(function () {
         list1[i] = "https://570427.selcdn.ru/Sphere/musiclibrary/" + list1[i];
       }
       
-      //list1 = tracksArray;
-      //playingList = list1;
-      //listLength = playingList.length;
-      //console.log(list1);
       shuffle(list1);
       ajaxingList2();
       
@@ -64,19 +60,8 @@ $(function () {
           list2[i] = "https://570427.selcdn.ru/Sphere/musiclibrary/" + list2[i];
         }
         
-        //list1 = tracksArray;
-        //playingList = list1;
-        //listLength = playingList.length;
-        //console.log(list1);
-        
-        //console.log("playing list is" + playingList);
-        
-        // shuffling 2 arrays
         shuffle(list2);
-        //console.log("shuffled list1" + list1);
         ajaxingList3();
-        
-        //$("#howler-play").show();
       },
       error: function () {
         console.log("failed to load tracks1.txt")
@@ -92,26 +77,18 @@ $(function () {
       contentType: "text/plain; charset=utf-8",
       success: function (data) {
         //parsing tracks.txt
-        list3 = data.split(/\r\n|\r|\n/g);
+        const parsed = data.split(/\r\n|\r|\n/g);
         
-        for (var i = 0; i < list3.length; i++) {
-          list3[i] = "https://570427.selcdn.ru/Sphere/musiclibrary/" + list3[i];
-        }
+        // for (var i = 0; i < list3.length; i++) {
+        //   list3[i] = "https://570427.selcdn.ru/Sphere/musiclibrary/" + list3[i];
+        // }
         
-        //list1 = tracksArray;
-        //playingList = list1;
-        //listLength = playingList.length;
-        //console.log(list1);
+        list3 = parsed.map(trackName => 'https://570427.selcdn.ru/Sphere/musiclibrary/' + trackName);
         
         var currentTime = new Date;
         var currentHour = currentTime.getHours();
-        //var currentHour = currentTime.getMinutes();
-        
-        //console.log("playing list is" + playingList);
         
         shuffle(list3);
-        //console.log("shuffled list1" + list1);
-        //checking if time is for list1 or already for list2
         if (currentHour < hourForPlayingList2 && currentHour > 6) {
           playingList = list1;
           listLength = playingList.length;
@@ -142,6 +119,7 @@ $(function () {
   
   // function for shuffling array
   function shuffle(array) {
+    console.log({ prev: array })
     var currentIndex = array.length, temporaryValue, randomIndex;
     
     // While there remain elements to shuffle...
@@ -157,79 +135,9 @@ $(function () {
       array[randomIndex] = temporaryValue;
     }
     
+    console.log({ updated: array })
     return array;
   }
-  
-  //---------------------------------- BLOCK for preloading
-  /*
-  var loaded = 0;
-  function loadedAudio() {
-      // this will be called every time an audio file is loaded
-      // we keep track of the loaded files vs the requested files
-      loaded++;
-      console.log(loaded + " audio files loaded!");
-      if (loaded == list2.length){
-        console.log("ALL files have loaded");
-       // main();
-      }
-  }
-
-  function preloadsounds()
-  {
-    //$("#loader").show();
-    //console.log(level.config);
-    //audioFiles = level.config.soundfiles;
-
-    // we start preloading all the audio files with html audio
-    for (var i in list2) {
-        preloadAudio(list2[i]);
-    }
-  }
-
-  function preloadAudio(url)
-  {
-    console.log("trying to preload "+ url);
-    var audio = new Audio();
-    // once this file loads, it will call loadedAudio()
-    // the file will be kept by the browser as cache
-    audio.addEventListener('canplaythrough', loadedAudio, false);
-
-    audio.addEventListener('error', function failed(e)
-    {
-      console.log("COULD NOT LOAD AUDIO");
-      //$("#NETWORKERROR").show();
-    });
-    audio.src = url;
-
-    audio.load();
-  }
-  */
-  //----------------------------------END OF BLOCK for preloading
-  
-  /*	sound1.once('play', function () {
-        var time1 = sound1.duration();
-        var timetoswitch1 = (time1 - fadeTime) * 1000;
-        console.log(time1, timetoswitch1);
-        var intTime = setTimeout (() => {
-          //var k = k + 2;
-          //loadingSound2 (k+2, list1, i);
-          sound2.play();
-            }, timetoswitch1);
-    }) */
-  
-  
-  /*	sound2.once('play', function () {
-  
-      var time2 = sound2.duration();
-      var timetoswitch2 = (time2 - fadeTime) * 1000;
-      console.log(time2, timetoswitch2);
-      var intTime = setTimeout (() => {
-            //var i = i + 2;
-            //loadingSound1 (i+2, list1, k);
-            playSound1();
-        }, timetoswitch2)
-    })
-  */
   
   
   function loadingSound1(i) {
@@ -241,6 +149,17 @@ $(function () {
       volume: 0,
       onpause: function () {
         clearInterval(intervaller)
+      },
+      // onplay() {
+      //   window.sound1 = sound1
+      //   console.log('sound1 plays')
+      // },
+      onload() {
+        console.log('pafds')
+        window.sound1 = sound1
+        const duration = sound1._duration
+        console.log({duration})
+        window.sound1.seek(duration - 15)
       },
       onend: function () {
         //console.log('i = ' + i + 'k = ' + k);
@@ -260,33 +179,29 @@ $(function () {
         if (currentHour < hourForPlayingList2 || playingList == list3) {
           if ((i == (playingList.length - 1)) || (i == (playingList.length - 2))) {
             i = 0;
-            loadingSound1(i);
           } else {
             i = i + 2;
-            loadingSound1(i);
           }
           console.log("keeping same playlist, and upcoming track is " + playingList[i]);
         } //else change the playing list on next one and load tracks from there
         else if (currentHour >= hourForPlayingList2 && currentHour < hourForPlayingList3 && playingList != list2) {
           i = 0;
           playingList = list2;
-          loadingSound1(i);
           console.log("---------------------now the time for list2, and upcoming track is " + playingList[i]);
         } else if (currentHour >= hourForPlayingList3) {
           i = 0;
           playingList = list3;
-          loadingSound1(i);
           console.log("---------------------now the time for list3, and upcoming track is " + playingList[i])
         } else {
           if ((i == (playingList.length - 1)) || (i == (playingList.length - 2))) {
             i = 0;
-            loadingSound1(i);
           } else {
             i = i + 2;
-            loadingSound1(i);
           }
           console.log("keeping same playlist, and upcoming track is " + playingList[i]);
         }
+        loadingSound1(i);
+  
       },
       onloaderror: function (e, msg) {
         console.log('onloaderrorrrr');
@@ -298,20 +213,12 @@ $(function () {
           
           if ((i == (playingList.length - 1)) || (i == (playingList.length - 2))) {
             i = 0;
-            loadingSound1(i);
           } else {
             i = i + 2;
-            loadingSound1(i);
           }
-          
+          loadingSound1(i);
         }, 3000);
       }
-      /*onend: function (i, list1) {
-       if ((i+1) != listLength || (i+2) != listLength) {
-         var i = i + 2;
-         loadingSound1 (i, list1)
-       }
-      }*/
     })
   }
   
@@ -323,6 +230,10 @@ $(function () {
       html5: true,
       onpause: function () {
         clearInterval(intervaller)
+      },
+      onplay() {
+        window.sound2 = sound2
+        console.log('sound2 plays')
       },
       onend: function () {
         //console.log('k = ' + k);
@@ -340,32 +251,27 @@ $(function () {
         if (currentHour < hourForPlayingList2 || playingList == list3) {
           if ((k == (playingList.length - 1)) || (k == (playingList.length - 2))) {
             k = 1;
-            loadingSound2(k);
           } else {
             k = k + 2;
-            loadingSound2(k);
           }
           console.log("keeping same playlist, and upcoming track is " + playingList[k]);
         } else if (currentHour >= hourForPlayingList2 && currentHour < hourForPlayingList3 && playingList != list2) {
           k = 1;
           playingList = list2;
-          loadingSound2(k);
           console.log("--------------------------now the time for list2, and upcoming track is " + playingList[k]);
         } else if (currentHour >= hourForPlayingList3) {
           k = 1;
           playingList = list3;
-          loadingSound2(k);
           console.log("--------------------------now the time for list3, and upcoming track is " + playingList[k]);
         } else {
           if ((k == (playingList.length - 1)) || (k == (playingList.length - 2))) {
             k = 1;
-            loadingSound2(k);
           } else {
             k = k + 2;
-            loadingSound2(k);
           }
           console.log("keeping same playlist, and upcoming track is " + playingList[k]);
         }
+        loadingSound2(k);
       },
       onloaderror: function (e, msg) {
         console.log('onloaderrorrrr');
@@ -376,50 +282,14 @@ $(function () {
         setTimeout(function () {
           if ((k == (playingList.length - 1)) || (k == (playingList.length - 2))) {
             k = 1;
-            loadingSound2(k);
           } else {
             k = k + 2;
-            loadingSound2(k);
           }
+          loadingSound2(k);
         }, 3000);
       }
-      //onend: function (i, list1) {
-      // if ((k+1) != listLength || (k+2) != listLength) {
-      // 	console.log(k);
-      // 	loadingSound2 (k+2, list1)
-      // }
-      //}
     })
   }
-  
-  /*	sound1.on('play', function() {
-    var time1 = sound1.duration();
-    var timetoswitch1 = (time1 - fadeTime) * 1000;
-    console.log(time1, timetoswitch1);
-    var intTime = setTimeout (() => {
-      sound2.play();
-    }, timetoswitch1);
-  }); */
-  
-  /*	sound2.on('play', function() {
-    var time2 = sound2.duration();
-    var timetoswitch2 = (time2 - fadeTime) * 1000;
-    console.log(time2, timetoswitch2);
-    var intTime = setTimeout (() => {
-      sound1.play();
-    }, timetoswitch2)
-  }); */
-  
-  
-  /*	var sound1 = new Howl({
-      src: [list1[i]],
-      preload: true
-    });
-
-    var sound2 = new Howl({
-      src: ['audio/2.m4a']
-    });
-  */
   
   $("#howler-play").on("click", function () {
     
@@ -471,45 +341,15 @@ $(function () {
       
     }
     
-    //preloadsounds();
-    
-    
-    //console.log(listLength);
-    
-    //var time1 = sound1.duration();
-    //var time2 = sound2.duration();
-    // var timeCurrent = sound1.currentTime;
-    //var timetoswitch1 = (time1 - fadeTime) * 1000;
-    //var timetoswitch2 = (time2 - fadeTime) * 1000;
-    
-    
-    //	sound1.on('play', function(time1) {
-    //		var interval = setInterval (() => {
-    //			if (time1 < 1000) {
-    //				sound2.play();
-    //				clearInterval(interval);
-    //		}
-    //		}, 1000)
-    //	})
-    
-    
-    //setInterval(() => {
-    //	if (time1 < 2000) {
-    //		sound2.play();
-    //		clearInterval(this);
-    //	}
-    //	else {
-    //		return;
-    //		}
-    //	},1000);
-    
-    //sound1.on('end', function() {
-    //	sound2.play()
-    //})
-    //setTimeout(sound2.play(), 2000);
-    //setTimeout(function() {sound2.play()}, 1000);
   });
+
+  // only for test start
+  setTimeout(() =>   $("#howler-play")[0].click()
+  ,1000)
+  // only for test end
   
+  
+  // $("#howler-play")[0].click()
   $("#submitLike").on("click", function (e) {
     
     if (sound1 == undefined || sound2 === undefined) {
@@ -518,30 +358,30 @@ $(function () {
     }
     
     insertingLikeDislikeFormData();
-  
-    console.log({formData: $formDislike.serializeObject()})
-  
+    
+    console.log({ formData: $formDislike.serializeObject() })
+    
     setTimeout(function () {
       e.preventDefault();
       var jqxhr = $.ajax({
         // url: url,
         url: 'http://localhost:3200/sphere-api-middleware',
         method: "POST",
-        contentType : 'application/json',
+        contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify($formLike.serializeObject()),
         success: console.log("value sended")
       })
-      .done(function (res) {
-        if (res.result === 'success') console.log("Success! Your like Saved");
-        if (res.error) console.error(res.error);
-      });
+        .done(function (res) {
+          if (res.result === 'success') console.log(res.result.message);
+          if (res.result === 'error') console.error(res.result.message);
+        });
       ;
     }, 3000);
   });
   
   $("#submitDislike").on("click", function (e) {
-  
+    
     if (sound1 == undefined || sound2 === undefined) {
       console.error('Error! Start player to enable dislikes');
       return;
@@ -549,24 +389,22 @@ $(function () {
     
     insertingLikeDislikeFormData();
     
-    console.log({formData: $formDislike.serializeObject()})
+    console.log({ formData: $formDislike.serializeObject() })
     setTimeout(function () {
       e.preventDefault();
       var jqxhr = $.ajax({
         // url: url,
         url: 'http://localhost:3200/sphere-api-middleware',
         method: "POST",
-        contentType : 'application/json',
+        contentType: 'application/json',
         dataType: "json",
         data: JSON.stringify($formDislike.serializeObject()),
         success: console.log("value sended")
       })
-      .done(function (res) {
-        const isSuccess = res.filter(item => item.status === 'fulfilled').length === 2
-        if (isSuccess) console.log("Success! Your dislike Saved.") // TODO: This song is now removed from your playlist");
-        if (res.error) console.error(res.error);
-      });
-      //
+        .done(function (res) {
+          if (res.result === 'success') console.log(res.result.message);
+          if (res.result === 'error') console.error(res.result.message);
+        });
     }, 3000);
   });
   
