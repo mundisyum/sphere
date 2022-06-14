@@ -4,8 +4,8 @@
 // https://hawksey.info/blog/2014/07/google-sheets-as-a-database-insert-with-apps-script-using-postget-methods-with-ajax-example/
 
 // function doGet(e) {
-// e = fakeEvent // uncomment for test usage
-// console.log({e})
+       // e = fakeEvent // uncomment for test usage
+       // console.log({e})
 //     var params = JSON.stringify(e);
 //     return HtmlService.createHtmlOutput(params);
 // }
@@ -18,25 +18,25 @@ function setup() {
 }
 
 var fakeGetEvent = {
-    "queryString": "username=jsmith&age=21",
-    "parameter": {
-        "place": "Test-place",
-        "value": "test-action",
-        "songname": "Test-song",
-        "playlistname": "nodejs-from-localhost",
-        // "username": "jsmith",
-        // "age": "21"
-    },
-    "contextPath": "",
-    "parameters": {
-        "username": [
-            "jsmith"
-        ],
-        "age": [
-            "21"
-        ]
-    },
-    "contentLength": -1
+  "queryString": "username=jsmith&age=21",
+  "parameter": {
+    "place": "Test-place",
+    "value": "test-action",
+    "songname": "Test-song",
+    "playlistname": "nodejs-from-localhost",
+    // "username": "jsmith",
+    // "age": "21"
+  },
+  "contextPath": "",
+  "parameters": {
+    "username": [
+      "jsmith"
+    ],
+    "age": [
+      "21"
+    ]
+  },
+  "contentLength": -1
 }
 // console.log({fakeGetEvent})
 
@@ -64,7 +64,7 @@ function doPost(e) {
 }
 
 function handleResponse(e) {
-    
+
     console.log('logger works!')
     // shortly after my original solution Google announced the LockService[1]
     // this prevents concurrent access overwritting data
@@ -73,33 +73,33 @@ function handleResponse(e) {
     var lock = LockService.getPublicLock();
     lock.waitLock(30000);  // wait 30 seconds before conceding defeat.
     // lock.waitLock(5000);  // wait 5 seconds before conceding defeat.
-    
-    
+
+
     // If you are passing JSON in the body of the request uncomment this block
     // --- this block start
     var jsonString = e.postData.getDataAsString();
     console.log({jsonString})
     e.parameter = JSON.parse(jsonString);
     // --- this block end
-    
+
     try {
         // console.log('inside try')
         // next set where we write the data - you could write to multiple/alternate destinations
         var doc = SpreadsheetApp.openById(SCRIPT_PROP.getProperty("key"));
         var sheet = doc.getSheetByName(SHEET_NAME);
         // console.log({sheet})
-        
+
         // we'll assume header is in row 1 but you can override with header_row in GET/POST data
         var headRow = e.parameter.header_row || 1;
-        
+
         // getRange(Integer,Integer,Integer,Integer)
         // https://developers.google.com/apps-script/reference/spreadsheet/sheet?hl=en#getRange(Integer,Integer,Integer,Integer)
         var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-        
+
         // console.log({headers})
         var nextRow = sheet.getLastRow() + 1; // get next row
         var row = [];
-        
+
         // loop through the header columns
         for (i in headers) {
             if (headers[i] == "Timestamp") { // special case if you include a 'Timestamp' column
@@ -108,25 +108,25 @@ function handleResponse(e) {
                 row.push(e.parameter[headers[i]]);
             }
         }
-        
+
         // console.log({row})
         // setValues(Object)
         // more efficient to set values as [][] array than individually
         // https://developers.google.com/apps-script/reference/spreadsheet/range?hl=en#setValues(Object)
         sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
-        
+
         // return json success results
         return ContentService
-          // .createTextOutput(JSON.stringify({"result": "success", "row": nextRow, e})) // debug purposes
-          .createTextOutput(JSON.stringify({"result": "success", "row": nextRow}))
-          .setMimeType(ContentService.MimeType.JSON);
+            // .createTextOutput(JSON.stringify({"result": "success", "row": nextRow, e})) // debug purposes
+            .createTextOutput(JSON.stringify({"result": "success", "row": nextRow}))
+            .setMimeType(ContentService.MimeType.JSON);
     } catch (error) {
         // if error return this
         console.log(error)
         return ContentService
-          // .createTextOutput(JSON.stringify({"result": "error", "error": e})) // debug purposes
-          .createTextOutput(JSON.stringify({"result": "error", "error": e}))
-          .setMimeType(ContentService.MimeType.JSON);
+            // .createTextOutput(JSON.stringify({"result": "error", "error": e})) // debug purposes
+            .createTextOutput(JSON.stringify({"result": "error", "error": e}))
+            .setMimeType(ContentService.MimeType.JSON);
     } finally { //release lock
         lock.releaseLock();
     }

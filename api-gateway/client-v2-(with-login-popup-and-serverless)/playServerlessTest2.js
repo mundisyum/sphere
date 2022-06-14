@@ -427,7 +427,8 @@ $("#submitDislike").on("click", function (e) {
     ...$formDislike.serializeObject(),
     login: formData.place,
     password: localStorage.getItem('password'),
-    playlistFileName: playlists[formData.playlistname]
+    playlistFileName: playlists[formData.playlistname],
+    projectFolderName
   }
   // console.log(requestData);
   

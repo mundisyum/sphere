@@ -387,7 +387,7 @@ $("#submitLike").on("click", function (e) {
   const requestData = {
     ...$formLike.serializeObject(),
     login: formData.place,
-    password: localStorage.getItem('password')
+    password: localStorage.getItem('password'),
   }
   // console.log({requestData})
   
@@ -427,9 +427,10 @@ $("#submitDislike").on("click", function (e) {
     ...$formDislike.serializeObject(),
     login: formData.place,
     password: localStorage.getItem('password'),
-    playlistFileName: playlists[formData.playlistname]
+    playlistFileName: playlists[formData.playlistname],
+    projectFolderName
   }
-  // console.log(requestData);
+  console.log(requestData);
   
   setTimeout(function () {
     e.preventDefault();

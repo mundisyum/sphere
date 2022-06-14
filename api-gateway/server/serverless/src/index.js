@@ -59,7 +59,7 @@ async function handleApiRequests(usersData) {
     }
   }
   
-  const { value, playlistFileName, songname } = usersData;
+  const { value, playlistFileName, songname, projectFolderName } = usersData;
   
   if (value === 'like' || songname === 'crossfaded') {
     const res = await sendDataToGoogleSheets(usersData)
@@ -103,7 +103,8 @@ async function handleApiRequests(usersData) {
       // "bucket" means "container"
       // bucketName should be replaced with real (production) bucket name
       // for example, bucketName could be "Sphere"
-      bucketName: 'test-bucket-container',
+      // bucketName: 'test-bucket-container',
+      bucketName: projectFolderName,
       playlistFileName: playlistFileName,
       playlistFolder: login, // so, playlistFolder will be something like "playPrognoz" or "playServersell"
       dislikedSongName: songname
